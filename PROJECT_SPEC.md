@@ -8,10 +8,10 @@ This project is a high-fidelity, premium frontend prototype for a **Filmmakers U
 **Key Aesthetic:** Cinematic, Premium, Dark Mode, Gold Accents, Glassmorphism.
 
 ## 2. Tech Stack & Environment
-*   **Framework:** React 19 (via ESM imports).
-*   **Styling:** Tailwind CSS (via CDN script injection).
+*   **Framework:** React 18 (Vite).
+*   **Styling:** Tailwind CSS (via CDN script injection for quick prototyping).
 *   **Icons:** Lucide React.
-*   **Build/Run:** Browser-based ES modules (no bundler setup required for this prototype phase).
+*   **Build Tool:** Vite (Handles TSX -> JS compilation).
 *   **Language:** TypeScript (TSX).
 
 ## 3. Design System & Theming
@@ -41,17 +41,19 @@ The design relies heavily on a custom `tailwind.config` injected in `index.html`
 ### `components/Wizard/WizardFlow.tsx`
 A 4-step linear process.
 *   **State:** Local `formData` mirroring `UserData` interface.
+*   **Transitions:** Wrapped in `WizardTransitionProvider`. Uses `<Clapperboard />` to obscure the screen during step changes for a cinematic effect.
 *   **UI Elements:**
     *   **Premium Stepper:** Custom horizontal progress bar with glowing gold circles.
     *   **Steps:**
         1.  **Personal:** Basic inputs.
         2.  **Professional:** Role, Education, IMDb.
-        3.  **Documents:**
-            *   Includes a **Requirements List** (styled card with bullets).
-            *   "Download Template" button simulation.
-            *   Drag & Drop styled upload zone.
+        3.  **Documents:** Includes a Requirements List, simulation of template download, and Drag & Drop zone.
         4.  **Review:** Read-only summary of data.
-*   **Transition:** Upon completion, shows a loading spinner (`Loader2`) then calls `onComplete`.
+
+### `components/Wizard/Clapperboard.tsx`
+*   An animated overlay component.
+*   **Behavior:** Appears when `goToStep` is called. "Claps" after ~800ms. Triggers the actual state change while the screen is covered, then fades out.
+*   **Context:** Consumes `WizardTransitionContext`.
 
 ### `components/Dashboard/DashboardLayout.tsx`
 A comprehensive dashboard view using a **Bento Grid** layout.
@@ -62,7 +64,6 @@ A comprehensive dashboard view using a **Bento Grid** layout.
         *   **Hero Widget (Member Card):** Large 2-col widget. Displays Avatar, ID, Status (Active), Valid Through progress bar, QR code.
         *   **Small Widgets:** Profile, Dues, Networking, Legal, Events.
 *   **Tab System:** Switches content between 'Overview', 'Resources', 'Dues', 'Profile'.
-    *   *Currently implemented views:* 'Overview' and 'Resources'.
 
 ### `translations.ts`
 Contains all static text strings for EN and RU.
@@ -106,7 +107,18 @@ The "Documents" step must display this specific list:
 
 ## 8. User Flow
 1.  User starts at **Wizard**.
-2.  User fills data -> Uploads mock file -> Reviews -> Submits.
-3.  Simulated loading screen.
-4.  User is redirected to **Dashboard**.
-5.  Dashboard displays data entered in Wizard (Name, Role).
+2.  User fills data -> "Next".
+3.  **Clapperboard Effect:** Screen is covered, clap occurs, step changes in background, screen reveals new step.
+4.  Completion -> Simulated loading screen.
+5.  Redirect to **Dashboard**.
+
+## 9. Deployment Guide (Vercel)
+This project is configured as a **Vite** application.
+
+1.  **Push to GitHub:** Commit and push all files (including `package.json`, `vite.config.ts`, `tsconfig.json`).
+2.  **Vercel Dashboard:**
+    *   Import the repository.
+    *   **Framework Preset:** Vercel should auto-detect **Vite**. If not, select it manually.
+    *   **Build Command:** `vite build` (or `npm run build`) - Auto-detected.
+    *   **Output Directory:** `dist` - Auto-detected.
+3.  **Deploy.**
