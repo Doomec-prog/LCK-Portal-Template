@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { UserData, Language } from '../../types';
 import { translations } from '../../translations';
@@ -16,9 +17,23 @@ import {
   Gavel,
   FileText,
   ChevronRight,
-  Bell
+  Bell,
+  Play,
+  Film,
+  Camera,
+  CheckCircle,
+  Wifi,
+  History,
+  Map,
+  Briefcase,
+  Bot,
+  Search,
+  MapPin,
+  Send,
+  ShoppingBag,
+  MessageSquare
 } from 'lucide-react';
-import { Button } from '../UI';
+import { Button, Input } from '../UI';
 
 interface DashboardProps {
   userData: UserData;
@@ -39,12 +54,14 @@ export const DashboardLayout: React.FC<DashboardProps> = ({ userData, onLogout, 
         </div>
       </div>
 
-      <nav className="flex-1 space-y-8 w-full flex flex-col items-center">
+      <nav className="flex-1 space-y-6 w-full flex flex-col items-center">
         {[
-          { id: 'overview', icon: LayoutDashboard },
-          { id: 'profile', icon: User },
-          { id: 'dues', icon: CreditCard },
-          { id: 'resources', icon: FileText },
+          { id: 'overview', icon: LayoutDashboard, label: t.nav.dashboard },
+          { id: 'market', icon: Briefcase, label: t.nav.market },
+          { id: 'locations', icon: Map, label: t.nav.locations },
+          { id: 'ai', icon: Bot, label: t.nav.ai },
+          { id: 'profile', icon: User, label: t.nav.profile },
+          { id: 'dues', icon: CreditCard, label: t.nav.dues },
         ].map((item) => (
           <button
             key={item.id}
@@ -54,6 +71,7 @@ export const DashboardLayout: React.FC<DashboardProps> = ({ userData, onLogout, 
                 ? 'bg-gold-500/10 text-gold-500 shadow-[0_0_15px_rgba(245,158,11,0.2)]' 
                 : 'text-slate-500 hover:text-gold-400 hover:bg-slate-900'
             }`}
+            title={item.label}
           >
             {activeTab === item.id && (
                <div className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 w-1 h-8 bg-gold-500 rounded-r-full shadow-[0_0_10px_rgba(245,158,11,0.8)]"></div>
@@ -61,9 +79,6 @@ export const DashboardLayout: React.FC<DashboardProps> = ({ userData, onLogout, 
             <item.icon size={24} />
           </button>
         ))}
-        
-        <div className="pt-4 border-t border-slate-800 w-12 mx-auto"></div>
-        <button className="text-slate-600 hover:text-gold-500 transition-colors"><Settings size={24} /></button>
       </nav>
 
       <div className="mt-auto">
@@ -165,6 +180,8 @@ export const DashboardLayout: React.FC<DashboardProps> = ({ userData, onLogout, 
     </div>
   );
 
+  // --- VIEWS ---
+
   const OverviewView = () => (
     <div className="animate-fadeIn pb-12">
       {/* Header Area */}
@@ -215,23 +232,221 @@ export const DashboardLayout: React.FC<DashboardProps> = ({ userData, onLogout, 
             title={t.widgets.networking.title}
             sub={t.widgets.networking.sub}
             mainText={t.widgets.networking.count}
-            icon={Users}
+            icon={Briefcase}
+            onClick={() => setActiveTab('market')}
          />
           <SmallWidget 
             title={t.widgets.legal.title}
             sub={t.widgets.legal.sub}
             mainText={t.widgets.legal.pending}
-            icon={Gavel}
+            icon={Bot}
+            onClick={() => setActiveTab('ai')}
          />
           <SmallWidget 
             title={t.widgets.events.title}
             sub={t.widgets.events.sub}
             mainText={t.widgets.events.event}
-            icon={Calendar}
+            icon={Map}
+            onClick={() => setActiveTab('locations')}
          />
       </div>
     </div>
   );
+
+  // --- NEW: Marketplace View ---
+  const MarketplaceView = () => {
+    const mt = t.market;
+    const [marketTab, setMarketTab] = useState('jobs');
+
+    return (
+      <div className="animate-fadeIn p-2 md:p-4 space-y-6">
+        <h2 className="text-3xl font-bold text-white mb-2">{mt.title}</h2>
+        
+        {/* Market Tabs */}
+        <div className="flex gap-4 border-b border-slate-800 pb-2 mb-6 overflow-x-auto">
+          {[
+            { id: 'jobs', label: mt.tabs.jobs, icon: Briefcase },
+            { id: 'talent', label: mt.tabs.talent, icon: Users },
+            { id: 'rental', label: mt.tabs.rental, icon: ShoppingBag }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setMarketTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap ${marketTab === tab.id ? 'text-gold-500 border-b-2 border-gold-500' : 'text-slate-400 hover:text-white'}`}
+            >
+              <tab.icon size={16} /> {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Listings Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+           {/* Mock Data based on active tab */}
+           {[1, 2, 3, 4, 5, 6].map((i) => (
+             <div key={i} className="bg-[#11131a] border border-slate-800 rounded-xl p-5 hover:border-gold-500/50 transition-all group cursor-pointer">
+               <div className="flex justify-between items-start mb-4">
+                 <span className="px-2 py-1 rounded bg-slate-800 text-[10px] text-slate-300 font-bold uppercase tracking-wider border border-slate-700">
+                   {marketTab === 'jobs' ? 'CREW CALL' : marketTab === 'rental' ? 'RENTAL' : 'TALENT'}
+                 </span>
+                 <span className="text-slate-500 text-xs">2h ago</span>
+               </div>
+               <h3 className="text-white font-bold text-lg mb-2 group-hover:text-gold-400 transition-colors">
+                 {marketTab === 'jobs' ? (i % 2 === 0 ? mt.cards.job1 : mt.cards.job2) :
+                  marketTab === 'rental' ? (i % 2 === 0 ? mt.cards.gear1 : mt.cards.gear2) :
+                  "Available for Projects"}
+               </h3>
+               <p className="text-slate-400 text-sm mb-4">
+                 Almaty, Kazakhstan • Full Shift
+               </p>
+               <div className="flex items-center gap-3 pt-4 border-t border-slate-800">
+                 <div className="w-8 h-8 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center">
+                    <User size={14} className="text-slate-400" />
+                 </div>
+                 <div className="text-xs">
+                   <p className="text-white font-medium">Production House {i}</p>
+                   <p className="text-gold-500 flex items-center gap-1"><ShieldCheck size={10} /> Verified Member</p>
+                 </div>
+               </div>
+             </div>
+           ))}
+        </div>
+      </div>
+    );
+  };
+
+  // --- NEW: Locations View ---
+  const LocationsView = () => {
+    const lt = t.locations;
+    return (
+      <div className="animate-fadeIn p-2 md:p-4 h-[calc(100vh-100px)] flex flex-col">
+        <div className="mb-6">
+           <h2 className="text-3xl font-bold text-white mb-1">{lt.title}</h2>
+           <p className="text-slate-400">{lt.subtitle}</p>
+        </div>
+        
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-8 min-h-0">
+           {/* Map Area (Simulated) */}
+           <div className="lg:col-span-2 bg-[#0F111A] rounded-2xl border border-slate-800 relative overflow-hidden group">
+             {/* Fake Map Image - Using a gradient and grid to simulate a tech map */}
+             <div className="absolute inset-0 bg-[#0F111A]">
+                {/* CSS Grid Overlay */}
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(15,23,42,0.3)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.3)_1px,transparent_1px)] bg-[size:40px_40px] opacity-20"></div>
+                {/* Simulated Terrain using CSS Gradients */}
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-[#1e293b] to-slate-900 opacity-80"></div>
+                {/* A glowing orb to represent Almaty */}
+                <div className="absolute top-[60%] right-[30%] w-32 h-32 bg-gold-500/10 rounded-full blur-3xl animate-pulse"></div>
+             </div>
+             
+             {/* Pins */}
+             <div className="absolute top-[60%] right-[30%] group/pin cursor-pointer">
+                <MapPin size={32} className="text-gold-500 drop-shadow-[0_0_10px_rgba(251,191,36,0.8)] animate-bounce" />
+                <div className="absolute top-8 left-1/2 -translate-x-1/2 bg-slate-900/90 px-3 py-1 rounded text-xs text-gold-500 border border-gold-500/30 whitespace-nowrap opacity-0 group-hover/pin:opacity-100 transition-opacity">
+                   Almaty City
+                </div>
+             </div>
+             <div className="absolute top-[40%] right-[20%] group/pin cursor-pointer">
+                <MapPin size={24} className="text-slate-400 hover:text-gold-400 transition-colors" />
+                <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-slate-900/90 px-2 py-1 rounded text-xs text-white border border-slate-700 whitespace-nowrap opacity-0 group-hover/pin:opacity-100 transition-opacity">
+                   Charyn Canyon
+                </div>
+             </div>
+              <div className="absolute top-[50%] left-[40%] group/pin cursor-pointer">
+                <MapPin size={24} className="text-slate-400 hover:text-gold-400 transition-colors" />
+                <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-slate-900/90 px-2 py-1 rounded text-xs text-white border border-slate-700 whitespace-nowrap opacity-0 group-hover/pin:opacity-100 transition-opacity">
+                   Bozjyra Tract
+                </div>
+             </div>
+
+             <div className="absolute top-6 left-6 bg-slate-900/80 backdrop-blur border border-slate-700 p-2 rounded-lg">
+                <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Coordinates</div>
+                <div className="text-xs font-mono text-gold-500">43.2551° N, 76.9126° E</div>
+             </div>
+           </div>
+
+           {/* Location List */}
+           <div className="bg-[#11131a] border border-slate-800 rounded-2xl p-6 overflow-y-auto">
+             <h3 className="text-lg font-bold text-white mb-4 border-b border-slate-800 pb-2">{lt.listHeader}</h3>
+             <div className="space-y-4">
+                {lt.places.map((place: any, i: number) => (
+                  <div key={i} className="group cursor-pointer hover:bg-slate-800/50 p-3 rounded-lg transition-colors border border-transparent hover:border-gold-500/20">
+                     <div className="flex justify-between items-start">
+                        <h4 className="font-bold text-white group-hover:text-gold-400">{place.name}</h4>
+                        <span className="text-[10px] uppercase bg-slate-800 px-1.5 py-0.5 rounded text-slate-400 border border-slate-700">{place.type}</span>
+                     </div>
+                     <p className="text-xs text-slate-500 mt-1 line-clamp-2">{place.desc}</p>
+                     <div className="mt-2 flex items-center text-xs text-gold-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                        View Details <ChevronRight size={12} />
+                     </div>
+                  </div>
+                ))}
+             </div>
+             <Button variant="outline" className="w-full mt-6 text-sm py-2">Suggest Location</Button>
+           </div>
+        </div>
+      </div>
+    );
+  };
+
+  // --- NEW: AI Lawyer View ---
+  const AILawyerView = () => {
+     const at = t.ai;
+     const [messages, setMessages] = useState([
+        { role: 'ai', text: at.welcome }
+     ]);
+
+     return (
+        <div className="animate-fadeIn p-2 md:p-4 h-[calc(100vh-100px)] flex flex-col max-w-5xl mx-auto">
+           <div className="mb-4 text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl mx-auto flex items-center justify-center mb-3 shadow-[0_0_20px_rgba(99,102,241,0.5)]">
+                 <Bot size={32} className="text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-white">{at.title}</h2>
+              <p className="text-slate-400 text-sm max-w-md mx-auto">{at.subtitle}</p>
+           </div>
+
+           {/* Chat Window */}
+           <div className="flex-1 bg-[#0F111A] border border-slate-800 rounded-2xl p-6 overflow-y-auto mb-4 flex flex-col gap-4 relative">
+              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none"></div>
+              
+              {messages.map((msg, i) => (
+                 <div key={i} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''} max-w-3xl ${msg.role === 'user' ? 'self-end' : ''} z-10`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${msg.role === 'ai' ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'bg-slate-700 text-white'}`}>
+                       {msg.role === 'ai' ? <Bot size={20} /> : <User size={20} />}
+                    </div>
+                    <div className={`p-4 rounded-2xl text-sm leading-relaxed ${
+                       msg.role === 'ai' 
+                       ? 'bg-slate-900 border border-slate-700 text-slate-200' 
+                       : 'bg-gold-500 text-slate-950 font-medium'
+                    }`}>
+                       {msg.text}
+                    </div>
+                 </div>
+              ))}
+           </div>
+
+           {/* Input Area */}
+           <div className="relative">
+              <input 
+                 type="text" 
+                 placeholder={at.inputPlaceholder}
+                 className="w-full bg-[#151720] border border-slate-700 rounded-xl pl-6 pr-14 py-4 text-white focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-all"
+              />
+              <button className="absolute right-3 top-3 p-2 bg-gold-500 hover:bg-gold-400 text-slate-900 rounded-lg transition-colors">
+                 <Send size={18} />
+              </button>
+           </div>
+           
+           <div className="mt-4 flex gap-2 justify-center flex-wrap">
+              <button 
+                 onClick={() => setMessages([...messages, { role: 'user', text: at.exampleQ }])}
+                 className="text-xs px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors border border-slate-700"
+              >
+                 "{at.exampleQ}"
+              </button>
+           </div>
+        </div>
+     );
+  };
 
   const ResourcesView = () => (
     <div className="space-y-6 animate-fadeIn p-4">
@@ -257,6 +472,224 @@ export const DashboardLayout: React.FC<DashboardProps> = ({ userData, onLogout, 
     </div>
   );
 
+  // --- Profile View (IMDb Pro Style) ---
+  const ProfileView = () => {
+    const pt = t.profile;
+    const mockCredits = [
+      { year: '2023', title: 'Midnight Echo', role: 'Director of Photography', type: 'Feature' },
+      { year: '2022', title: 'The Last Train', role: 'Camera Operator', type: 'Short' },
+      { year: '2021', title: 'Neon Dreams', role: 'DoP', type: 'Commercial' },
+      { year: '2020', title: 'Silence', role: 'DoP', type: 'Feature' },
+    ];
+
+    return (
+      <div className="animate-fadeIn p-2 md:p-4 space-y-8">
+        <h2 className="text-3xl font-bold text-white mb-6 border-b border-slate-800 pb-4">{t.widgets.profile.title}</h2>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Main Content (Left Col) */}
+          <div className="lg:col-span-2 space-y-8">
+            
+            {/* Showreel Section */}
+            <div className="bg-[#11131a] border border-slate-800 rounded-2xl overflow-hidden group">
+               <div className="p-6 border-b border-slate-800 flex justify-between items-center">
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                     <Film className="text-gold-500" size={20} /> {pt.headers.showreel}
+                  </h3>
+               </div>
+               {/* Video Placeholder */}
+               <div className="relative aspect-video bg-slate-900 w-full overflow-hidden">
+                  <img src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1000&q=80" className="w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-700" alt="Showreel Cover" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                     <button className="w-16 h-16 bg-gold-500/90 hover:bg-gold-400 rounded-full flex items-center justify-center pl-1 text-slate-900 transition-all hover:scale-110 shadow-[0_0_30px_rgba(251,191,36,0.5)]">
+                        <Play size={32} fill="currentColor" />
+                     </button>
+                  </div>
+               </div>
+            </div>
+
+            {/* Credits List */}
+            <div className="bg-[#11131a] border border-slate-800 rounded-2xl overflow-hidden">
+               <div className="p-6 border-b border-slate-800">
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                     <Clapperboard className="text-gold-500" size={20} /> {pt.headers.credits}
+                  </h3>
+               </div>
+               <div>
+                  <div className="grid grid-cols-12 px-6 py-3 bg-slate-900/50 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                     <div className="col-span-2">{pt.table.year}</div>
+                     <div className="col-span-5">{pt.table.project}</div>
+                     <div className="col-span-3">{pt.table.role}</div>
+                     <div className="col-span-2 text-right">{pt.table.type}</div>
+                  </div>
+                  {mockCredits.map((credit, idx) => (
+                     <div key={idx} className="grid grid-cols-12 px-6 py-4 border-b border-slate-800/50 hover:bg-white/5 transition-colors items-center text-sm">
+                        <div className="col-span-2 text-gold-500 font-mono">{credit.year}</div>
+                        <div className="col-span-5 font-medium text-white">{credit.title}</div>
+                        <div className="col-span-3 text-slate-400">{credit.role}</div>
+                        <div className="col-span-2 text-right">
+                           <span className="px-2 py-1 bg-slate-800 rounded text-xs text-slate-300 border border-slate-700">{credit.type}</span>
+                        </div>
+                     </div>
+                  ))}
+               </div>
+            </div>
+
+          </div>
+
+          {/* Sidebar Info (Right Col) */}
+          <div className="space-y-6">
+             {/* Bio */}
+             <div className="bg-[#11131a] border border-slate-800 rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-white mb-4">{pt.headers.about}</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">
+                   {pt.mockBio}
+                </p>
+                <div className="mt-4 pt-4 border-t border-slate-800 grid grid-cols-2 gap-4">
+                   <div>
+                      <span className="block text-xs text-slate-500 uppercase">Location</span>
+                      <span className="text-white text-sm">{userData.city}</span>
+                   </div>
+                   <div>
+                      <span className="block text-xs text-slate-500 uppercase">Union Status</span>
+                      <span className="text-gold-500 text-sm font-bold flex items-center gap-1"><CheckCircle size={12}/> Active</span>
+                   </div>
+                </div>
+             </div>
+
+             {/* Skills */}
+             <div className="bg-[#11131a] border border-slate-800 rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                   <Camera className="text-gold-500" size={18} /> {pt.headers.skills}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                   {pt.skills.map((skill: string, i: number) => (
+                      <span key={i} className="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-300 hover:border-gold-500/50 hover:text-white transition-colors cursor-default">
+                         {skill}
+                      </span>
+                   ))}
+                </div>
+             </div>
+          </div>
+
+        </div>
+      </div>
+    );
+  };
+
+  // --- Dues View (Premium Banking Style) ---
+  const DuesView = () => {
+    const dt = t.dues;
+    const transactions = [
+       { date: '15 Jan 2024', desc: 'Annual Membership Fee 2024', amount: '$200.00', status: 'Completed' },
+       { date: '15 Jan 2023', desc: 'Annual Membership Fee 2023', amount: '$200.00', status: 'Completed' },
+       { date: '10 Nov 2022', desc: 'Legal Consultation Fee', amount: '$50.00', status: 'Completed' },
+    ];
+
+    return (
+      <div className="animate-fadeIn p-2 md:p-4 space-y-8 max-w-5xl mx-auto">
+         <h2 className="text-3xl font-bold text-white mb-6 border-b border-slate-800 pb-4">{dt.title}</h2>
+         
+         <div className="flex flex-col lg:flex-row gap-8 items-start">
+            
+            {/* The Golden Card */}
+            <div className="w-full lg:w-[420px] shrink-0">
+               <div className="aspect-[1.586/1] rounded-2xl relative overflow-hidden shadow-2xl shadow-gold-900/30 group transition-transform hover:scale-[1.02] duration-500">
+                  {/* Card Background (CSS Only) */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#d97706] via-[#fbbf24] to-[#78350f]"></div>
+                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
+                  <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/20 blur-3xl rounded-full"></div>
+                  
+                  <div className="relative z-10 p-6 h-full flex flex-col justify-between text-slate-900">
+                     <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-2">
+                           {/* Chip */}
+                           <div className="w-12 h-9 bg-gradient-to-br from-yellow-200 to-yellow-500 rounded-md border border-yellow-600/30 flex items-center justify-center overflow-hidden relative">
+                              <div className="absolute w-[1px] h-full bg-black/10 left-1/3"></div>
+                              <div className="absolute w-[1px] h-full bg-black/10 right-1/3"></div>
+                              <div className="absolute h-[1px] w-full bg-black/10 top-1/3"></div>
+                              <div className="absolute h-[1px] w-full bg-black/10 bottom-1/3"></div>
+                           </div>
+                           <Wifi size={20} className="text-slate-900/70 rotate-90" />
+                        </div>
+                        <span className="font-bold tracking-widest text-sm opacity-70">UNION ID</span>
+                     </div>
+
+                     <div className="text-center">
+                        <div className="text-xl font-mono font-bold tracking-[0.2em] drop-shadow-sm opacity-90">9210 4567 8821</div>
+                     </div>
+
+                     <div className="flex justify-between items-end">
+                        <div>
+                           <div className="text-[10px] font-bold uppercase tracking-wider opacity-60">Member Name</div>
+                           <div className="font-bold tracking-wide uppercase">{userData.fullName}</div>
+                        </div>
+                        <div className="text-right">
+                           <div className="text-[10px] font-bold uppercase tracking-wider opacity-60">Valid Thru</div>
+                           <div className="font-mono font-bold">12/25</div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               
+               <div className="mt-6 bg-[#11131a] border border-slate-800 p-5 rounded-2xl flex items-center justify-between">
+                  <div>
+                     <p className="text-slate-400 text-xs uppercase tracking-wider mb-1">{dt.paidUntil}</p>
+                     <p className="text-white font-bold text-lg">Dec 31, 2025</p>
+                  </div>
+                  <div className="text-right">
+                     <div className="flex items-center gap-2 text-green-500 text-xs font-bold mb-1 justify-end">
+                        <CheckCircle size={14} /> Active
+                     </div>
+                     <p className="text-slate-500 text-xs">{dt.autoRenew}</p>
+                  </div>
+               </div>
+            </div>
+
+            {/* Transaction History */}
+            <div className="flex-1 w-full bg-[#11131a] border border-slate-800 rounded-2xl overflow-hidden flex flex-col h-full min-h-[400px]">
+               <div className="p-6 border-b border-slate-800 flex justify-between items-center">
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                     <History className="text-gold-500" size={20} /> {dt.history}
+                  </h3>
+               </div>
+               <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                     <thead>
+                        <tr className="bg-slate-900/50 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-800">
+                           <th className="px-6 py-4">{dt.table.date}</th>
+                           <th className="px-6 py-4">{dt.table.desc}</th>
+                           <th className="px-6 py-4">{dt.table.amount}</th>
+                           <th className="px-6 py-4 text-right">{dt.table.status}</th>
+                        </tr>
+                     </thead>
+                     <tbody className="divide-y divide-slate-800/50">
+                        {transactions.map((tr, i) => (
+                           <tr key={i} className="hover:bg-white/5 transition-colors">
+                              <td className="px-6 py-4 text-sm text-slate-300 whitespace-nowrap">{tr.date}</td>
+                              <td className="px-6 py-4 text-sm text-white font-medium">{tr.desc}</td>
+                              <td className="px-6 py-4 text-sm text-white font-mono">{tr.amount}</td>
+                              <td className="px-6 py-4 text-right">
+                                 <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-500 text-xs font-bold border border-green-500/20">
+                                    {tr.status}
+                                 </span>
+                              </td>
+                           </tr>
+                        ))}
+                     </tbody>
+                  </table>
+               </div>
+               <div className="mt-auto p-4 border-t border-slate-800 text-center">
+                   <Button variant="ghost" className="text-xs">Load More</Button>
+               </div>
+            </div>
+
+         </div>
+      </div>
+    );
+  }
+
   // --- Main Render ---
   return (
     <div className="min-h-screen bg-[#06070a] text-white flex font-sans">
@@ -272,9 +705,12 @@ export const DashboardLayout: React.FC<DashboardProps> = ({ userData, onLogout, 
       <main className="flex-1 pl-0 md:pl-24 p-6 md:p-10 pt-20 md:pt-10 min-h-screen overflow-y-auto bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#1a1c29] via-[#06070a] to-[#06070a]">
         <div className="max-w-7xl mx-auto">
           {activeTab === 'overview' && <OverviewView />}
+          {activeTab === 'market' && <MarketplaceView />}
+          {activeTab === 'locations' && <LocationsView />}
+          {activeTab === 'ai' && <AILawyerView />}
           {activeTab === 'resources' && <ResourcesView />}
-          {activeTab === 'dues' && <div className="flex items-center justify-center h-[50vh] text-slate-600">Dues Module Placeholder</div>}
-          {activeTab === 'profile' && <div className="flex items-center justify-center h-[50vh] text-slate-600">Profile Module Placeholder</div>}
+          {activeTab === 'dues' && <DuesView />}
+          {activeTab === 'profile' && <ProfileView />}
         </div>
       </main>
     </div>
