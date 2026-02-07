@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { UserData, Language } from '../../types';
 import { translations } from '../../translations';
 import { 
@@ -31,7 +31,8 @@ import {
   MapPin,
   Send,
   ShoppingBag,
-  MessageSquare
+  MessageSquare,
+  Loader2
 } from 'lucide-react';
 import { Button, Input } from '../UI';
 
@@ -253,7 +254,7 @@ export const DashboardLayout: React.FC<DashboardProps> = ({ userData, onLogout, 
     </div>
   );
 
-  // --- NEW: Marketplace View ---
+  // --- Marketplace View ---
   const MarketplaceView = () => {
     const mt = t.market;
     const [marketTab, setMarketTab] = useState('jobs');
@@ -314,7 +315,7 @@ export const DashboardLayout: React.FC<DashboardProps> = ({ userData, onLogout, 
     );
   };
 
-  // --- NEW: Locations View ---
+  // --- Locations View ---
   const LocationsView = () => {
     const lt = t.locations;
     return (
@@ -387,12 +388,45 @@ export const DashboardLayout: React.FC<DashboardProps> = ({ userData, onLogout, 
     );
   };
 
-  // --- NEW: AI Lawyer View ---
+  // --- UPDATED: AI Lawyer View (Simulated Logic) ---
   const AILawyerView = () => {
      const at = t.ai;
      const [messages, setMessages] = useState([
         { role: 'ai', text: at.welcome }
      ]);
+     const [inputValue, setInputValue] = useState('');
+     const [isTyping, setIsTyping] = useState(false);
+     const scrollRef = useRef<HTMLDivElement>(null);
+
+     // Auto scroll
+     useEffect(() => {
+        if(scrollRef.current) {
+          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+     }, [messages, isTyping]);
+
+     const handleSend = (text: string = inputValue) => {
+        if (!text.trim()) return;
+        
+        // Add user message
+        setMessages(prev => [...prev, { role: 'user', text: text }]);
+        setInputValue('');
+        setIsTyping(true);
+
+        // Simulate AI delay and response
+        setTimeout(() => {
+           setIsTyping(false);
+           // Mock responses
+           let response = "That is an excellent question. Based on the 2024 Law on Cinematography, you are eligible for a 30% tax rebate if your production budget exceeds 500 million KZT. Shall I draft a preliminary application?";
+           if (text.includes("grant") || text.includes("грант")) {
+              response = "For GSCP grants, the submission window opens on March 1st. You will need a detailed script, a production budget, and a letter of intent from a distributor.";
+           } else if (text.includes("permit") || text.includes("разрешен")) {
+              response = "Filming permits for public locations in Almaty typically take 5 business days. For the Charyn Canyon, you need a special ecological permit.";
+           }
+
+           setMessages(prev => [...prev, { role: 'ai', text: response }]);
+        }, 1500 + Math.random() * 1000); // 1.5 - 2.5s delay
+     };
 
      return (
         <div className="animate-fadeIn p-2 md:p-4 h-[calc(100vh-100px)] flex flex-col max-w-5xl mx-auto">
@@ -405,15 +439,15 @@ export const DashboardLayout: React.FC<DashboardProps> = ({ userData, onLogout, 
            </div>
 
            {/* Chat Window */}
-           <div className="flex-1 bg-[#0F111A] border border-slate-800 rounded-2xl p-6 overflow-y-auto mb-4 flex flex-col gap-4 relative">
+           <div ref={scrollRef} className="flex-1 bg-[#0F111A] border border-slate-800 rounded-2xl p-6 overflow-y-auto mb-4 flex flex-col gap-4 relative">
               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none"></div>
               
               {messages.map((msg, i) => (
-                 <div key={i} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''} max-w-3xl ${msg.role === 'user' ? 'self-end' : ''} z-10`}>
+                 <div key={i} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''} max-w-3xl ${msg.role === 'user' ? 'self-end' : ''} z-10 animate-fadeIn`}>
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${msg.role === 'ai' ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'bg-slate-700 text-white'}`}>
                        {msg.role === 'ai' ? <Bot size={20} /> : <User size={20} />}
                     </div>
-                    <div className={`p-4 rounded-2xl text-sm leading-relaxed ${
+                    <div className={`p-4 rounded-2xl text-sm leading-relaxed shadow-lg ${
                        msg.role === 'ai' 
                        ? 'bg-slate-900 border border-slate-700 text-slate-200' 
                        : 'bg-gold-500 text-slate-950 font-medium'
@@ -422,6 +456,18 @@ export const DashboardLayout: React.FC<DashboardProps> = ({ userData, onLogout, 
                     </div>
                  </div>
               ))}
+              
+              {isTyping && (
+                 <div className="flex gap-4 max-w-3xl z-10 animate-fadeIn">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
+                       <Bot size={20} />
+                    </div>
+                    <div className="p-4 rounded-2xl bg-slate-900 border border-slate-700 flex items-center gap-2">
+                       <Loader2 size={16} className="animate-spin text-indigo-400" />
+                       <span className="text-xs text-slate-500">Processing legal database...</span>
+                    </div>
+                 </div>
+              )}
            </div>
 
            {/* Input Area */}
@@ -429,16 +475,24 @@ export const DashboardLayout: React.FC<DashboardProps> = ({ userData, onLogout, 
               <input 
                  type="text" 
                  placeholder={at.inputPlaceholder}
-                 className="w-full bg-[#151720] border border-slate-700 rounded-xl pl-6 pr-14 py-4 text-white focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-all"
+                 value={inputValue}
+                 onChange={(e) => setInputValue(e.target.value)}
+                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                 className="w-full bg-[#151720] border border-slate-700 rounded-xl pl-6 pr-14 py-4 text-white focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-all shadow-xl"
               />
-              <button className="absolute right-3 top-3 p-2 bg-gold-500 hover:bg-gold-400 text-slate-900 rounded-lg transition-colors">
+              <button 
+                onClick={() => handleSend()}
+                disabled={!inputValue.trim() || isTyping}
+                className="absolute right-3 top-3 p-2 bg-gold-500 hover:bg-gold-400 disabled:bg-slate-700 disabled:text-slate-500 text-slate-900 rounded-lg transition-colors"
+              >
                  <Send size={18} />
               </button>
            </div>
            
            <div className="mt-4 flex gap-2 justify-center flex-wrap">
               <button 
-                 onClick={() => setMessages([...messages, { role: 'user', text: at.exampleQ }])}
+                 onClick={() => handleSend(at.exampleQ)}
+                 disabled={isTyping}
                  className="text-xs px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors border border-slate-700"
               >
                  "{at.exampleQ}"
